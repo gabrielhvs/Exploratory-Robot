@@ -41,3 +41,10 @@ void Actuator::Left(int pwm1, int pwm2){
   analogWrite(pinSpe1, pwm1);
   analogWrite(pinSpe2, pwm2);
   }
+
+void Actuator::Stop(){
+  digitalWrite(pinCtr1, 0);
+  digitalWrite(pinCtr2, 0);
+  analogWrite(pinSpe1, 0);
+  analogWrite(pinSpe2, 0);
+  }

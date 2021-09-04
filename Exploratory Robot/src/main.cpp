@@ -1,52 +1,68 @@
+#include <SoftwareSerial.h> 
 #include <Arduino.h>
-#include "Comunication.hpp" 
 #include "Actuators.hpp"
 #include "Sensors.hpp"
 
-int pinUltra[4] = {11,10,9,8};
-int pinEnco[2] = {12, 13};
-Actuator EngineGoes(5, 7, 4, 6);
-Comunication myHC12(2, 3, 9600);
-Sensor mySensor(2, pinUltra, 2 , pinEnco);
+////////////////////////////////////////////-Variables-///////////////////////////////////////////////////////
+char date;                      //Comunicate variable
+unsigned long int timeold[2];   //Measure last time
+int pulseSpeed[2] = {0,0};      //Measure of quantity of speed pulse
+int pinUltra[4] = {13,11,11,10};//Pins sensor ultrasonic
+int pinEnco[2] = {2, 3};        //Pins sensor speed sensor
 
+////////////////////////////////////////////-Objects-/////////////////////////////////////////////////////////
+Actuator Engine(7, 8, 9, 6);          //Object - Enggine
+SoftwareSerial HC12(4, 5);            //Object - Comunicate
+Sensor mySensor(2,pinUltra,2,pinEnco);//Object - Sensors (Speed and Ultrasonic)
  
+////////////////////////////////////////////-Startup-/////////////////////////////////////////////////////////
 void setup() {
-  myHC12.BeginHC12();
-  mySensor.beginUltraS();
+  mySensor.beginUltraS();  
   mySensor.beginSenSpeed();
-  Serial.begin(9600);
- 
+  Serial.begin(9600);      //Baund rate 9600
+  HC12.begin(19200);       //Baund rate 19200
 }
+
+////////////////////////////////////////////-Loop-////////////////////////////////////////////////////////////
 void loop() {
-  //Serial.print("Sensor UltroSonic 01: ");
-  //Serial.print(mySensor.readUltraS(0));
- // Serial.print(" | Sensor UltroSonic 02: ");
- // Serial.println(mySensor.readUltraS(1));
-  Serial.print(mySensor.readSenSpeed(0));
-  char date = myHC12.Receive();
-  if(date == 'A'){
-    myHC12.Send('A');
-    EngineGoes.Forward(255, 255);
-  }
-  else if(date == 'B'){
-    myHC12.Send('B');
-    EngineGoes.Backward(255, 255);
-  }
-  else if(date == 'C'){
-    myHC12.Send('C');
-    EngineGoes.Right(255, 255);
-  }
-  else if(date == 'D'){
-    myHC12.Send('D');
-    EngineGoes.Left(255, 255);
-  }
-  else if(date == 'E'){
-    myHC12.Send('E');
-    EngineGoes.Forward(0, 0);
-  }
-  /*for(int i =0; i<=255; i+=40){
-    EngineGoes.Right(i, 0);
-    delay(5000);
-  }*/
+
+  if (HC12.available() > 1)   //Read HC12 -> Variable 
+    date = HC12.read();
+
+  Serial.println(date);       //Print of date reciave         
+
+  //Choice of action 
+  if(date == 'K')
+    Engine.Forward(255, 255); //Robot go to front
   
+  else if(date == 'J')
+    Engine.Backward(255, 255); //Robot go to back
+  
+  else if(date == 'E')
+    Engine.Right(255, 255);    //Robot go to Right
+  
+  else if(date == 'F')
+    Engine.Left(255, 255);     //Robot go to Left
+
+  else if(date == 'R')
+    Engine.Stop();       //Robot Stop
+  
+ /* 
+ if (millis() - timeold[0] >= 1000)
+    {
+        Serial.print("Speed Sensor 01: ");
+        Serial.print(mySensor.readSenSpeed(0, millis()-timeold[0]));
+        Serial.print(" |Speed Sensor 02: ");
+        Serial.println(mySensor.readSenSpeed(1, millis()-timeold[0]));
+        timeold[0] = millis();
+  }
+  if (millis() - timeold[1] >= 500)
+    {
+      Serial.print("Sensor UltroSonic 01: ");
+      Serial.print(mySensor.readUltraS(0));
+      Serial.print(" | Sensor UltroSonic 02: ");
+      Serial.println(mySensor.readUltraS(1));
+      timeold[1] = millis();
+  }
+  */
 }

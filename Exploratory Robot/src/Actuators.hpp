@@ -11,6 +11,7 @@ class Actuator
     void Backward(int pwm1, int pwm2);
     void Right(int pwm1, int pwm2);
     void Left(int pwm1, int pwm2);
+    void Stop();
 
   private:
     int pinCtr1, pinCtr2;
