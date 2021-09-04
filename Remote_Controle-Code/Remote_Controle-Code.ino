@@ -1,7 +1,3 @@
-//Programa : Controle servo motor com joystick
-//Autor : FILIPEFLOP
-
-
 #include <SoftwareSerial.h>
 SoftwareSerial mySerial(2, 3);
 
