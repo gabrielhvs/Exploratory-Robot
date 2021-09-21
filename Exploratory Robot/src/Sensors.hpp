@@ -11,12 +11,12 @@ class Sensor
     void beginSenSpeed();
     float readUltraS(int num);
     int readSenSpeed(int num, int delta);
-    
+    int readSenTemp(int num);
 
 
   private:
     int numSus, numSss;
-    int pinTrig[2], pinEcho[2], pinEnc[2];
+    int pinTrig[2], pinEcho[2], pinEnc[2], pinTemp;
     int rpm[2];
    
 };

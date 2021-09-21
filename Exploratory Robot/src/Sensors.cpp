@@ -61,3 +61,8 @@ int Sensor::readSenSpeed(int num, int delta){
 
     return rpm[num];
 }
+
+int Sensor::readSenTemp(int num){
+
+        return analogRead(num);
+}
