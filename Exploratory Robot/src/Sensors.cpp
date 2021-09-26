@@ -3,9 +3,10 @@
 
 extern int pulseSpeed[2];//variavel de interrupção
 
-Sensor::Sensor(int q, int *pinUS, int qs, int *pinSS){
-    numSus = q;
-    numSss = qs;
+Sensor::Sensor(int qUS, int *pinUS, int qSS, int *pinSS, int qT, int *pinST){
+    numSus = qUS;
+    numSss = qSS;
+    numSst = qT;
     for(int i =0; i<numSus; i++){
         pinTrig[i]=pinUS[2*i];
         pinEcho[i]=pinUS[(2*i)+1];
@@ -13,6 +14,9 @@ Sensor::Sensor(int q, int *pinUS, int qs, int *pinSS){
     }
     for(int i =0; i<numSss; i++)
         pinEnc[i]=pinSS[i];
+
+    for(int i =0; i<numSst; i++)
+        pinTemp[i]=pinST[i];
 
 }
 
@@ -26,7 +30,7 @@ void Sensor::beginUltraS(){
 
 float Sensor::readUltraS(int num){
   digitalWrite(pinTrig[num], HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(11);
   digitalWrite(pinTrig[num], LOW);
   return (pulseIn(pinEcho[num], HIGH)*0.034029/2); 
 }
@@ -34,6 +38,7 @@ float Sensor::readUltraS(int num){
 void SensorSpeedCounte0(){
     pulseSpeed[0]++;
 }
+
 void SensorSpeedCounte1(){
     pulseSpeed[1]++;
 }
@@ -63,6 +68,11 @@ int Sensor::readSenSpeed(int num, int delta){
 }
 
 int Sensor::readSenTemp(int num){
+
+        return analogRead(pinTemp[num]);
+}
+
+int Sensor::readSenLight(int num){
 
         return analogRead(num);
 }

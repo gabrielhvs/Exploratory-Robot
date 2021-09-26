@@ -6,17 +6,18 @@
 class Sensor
 {
   public:
-    Sensor(int q, int *pinUS, int q1, int *pinSS);
+    Sensor(int qUS, int *pinUS, int qSS, int *pinSS, int qT, int *pinST);
     void beginUltraS();
     void beginSenSpeed();
     float readUltraS(int num);
     int readSenSpeed(int num, int delta);
     int readSenTemp(int num);
+    int readSenLight(int num);
 
 
   private:
-    int numSus, numSss;
-    int pinTrig[2], pinEcho[2], pinEnc[2], pinTemp;
+    int numSus, numSss, numSst;
+    int pinTrig[3], pinEcho[3], pinEnc[2], pinTemp[2];
     int rpm[2];
    
 };
