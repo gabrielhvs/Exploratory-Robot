@@ -56,7 +56,7 @@ void setup() {
 
 ////////////////////////////////////////////-Loop-////////////////////////////////////////////////////////////
 void loop() {
-/*
+
   if (millis() - timeold[0] >= 1000){
     for(int i=0;i<2; i++)
       ReadSpeed[i]=mySensor.readSenSpeed(0, millis()-timeold[0]);
@@ -146,18 +146,7 @@ void loop() {
     timeold[4] = millis();
 
   }
-  */
- digitalWrite(0,LOW);
-  Engine.Left(170, 170);
-  delay(500);
-  Engine.Forward(170, 170);
-  delay(500);
-  Engine.Right(170, 170);
-  delay(500);
-  Engine.Backward(170, 170);
-  delay(500);
-  Engine.Stop();
-  delay(500);
+  
 
 
 
