@@ -30,13 +30,27 @@ Sensor mySensor(3, pinUltra, 2, pinEnco, 2, pinTemp);//Object - Sensors (Speed a
 File main_folder; 
 File dataFile;
 
+unsigned long timer = millis();                 // Delay Timer
+int set=1;
+char SerialByteIn;                              // Temporary variable
+char HC12ByteIn;                                // Temporary variable
+String HC12ReadBuffer = "";                     // Read/Write Buffer 1 for HC12
+String SerialReadBuffer = "";                   // Read/Write Buffer 2 for Serial
+boolean SerialEnd = false;                      // Flag to indicate End of Serial String
+boolean HC12End = false;                        // Flag to indiacte End of HC12 String
+boolean commandMode = false;  
+
+String data_array = "";
+
 ////////////////////////////////////////////-Startup-/////////////////////////////////////////////////////////
 void setup() {
   mySensor.beginUltraS();  
   mySensor.beginSenSpeed();
   Serial.begin(9600);      //Baund rate 9600
-  HC12.begin(19200);       //Baund rate 19200
+  HC12.begin(9600);       //Baund rate 19200
   pinMode(13, OUTPUT);
+  pinMode(0, OUTPUT);
+  digitalWrite(0,0);
 
   if (!SD.begin(chipSelect)) {
       return;
@@ -51,105 +65,113 @@ void setup() {
       dataFile.println(Title);
       dataFile.close();
   }
-  
+     
+ 
 }
 
 ////////////////////////////////////////////-Loop-////////////////////////////////////////////////////////////
 void loop() {
 
-  if (millis() - timeold[0] >= 1000){
-    for(int i=0;i<2; i++)
-      ReadSpeed[i]=mySensor.readSenSpeed(0, millis()-timeold[0]);
-    timeold[0] = millis();           
-  }
-
-  if (millis() - timeold[1] >= 500){
-    for(int i= 0; i<3; i++){
-      ReadDistance[i] = mySensor.readUltraS(i);
-      delay(10);
-    }
-    
-    timeold[1] = millis();
-  }
-
-  if (millis() - timeold[2] >= 200){
-
-     Slight = mySensor.readSenLight(5);
-     for(int i=0;i<2; i++)
-      ReadTemp[i]=mySensor.readSenTemp(i);
-    
-    if (ReadTemp[0]<=15 or ReadTemp[1]<=20)
-      digitalWrite(0,HIGH);
-    else
-      digitalWrite(0,LOW);
-    
-    timeold[2] = millis();
-
-  }
- 
-  if (millis() - timeold[3] >= 100){
-    String data_array = "";
-    data_array += String(millis()); 
-    data_array += ",";
-    data_array += String(ReadTemp[0]);
-    data_array += ",";
-    data_array += String(ReadTemp[1]);
-    data_array += ",";
-    data_array += String(Slight);
-    data_array += ",";
-    data_array += String(ReadDistance[0]);
-    data_array += ",";
-    data_array += String(ReadDistance[1]);
-    data_array += ",";
-    data_array += String(ReadDistance[2]);
-    data_array += ",";
-    data_array += String(ReadSpeed[0]);
-    data_array += ",";
-    data_array += String(ReadSpeed[1]);
-
-    Serial.println(data_array);
-    dataFile = SD.open("DATA"+fileName+".csv",FILE_WRITE);
-  
-    if(dataFile){
-      dataFile.println(data_array);
-      dataFile.close();
+    if (millis() - timeold[0] >= 1000){
+      for(int i=0;i<2; i++)
+        ReadSpeed[i]=mySensor.readSenSpeed(0, millis()-timeold[0]);
+      timeold[0] = millis();           
     }
 
-    timeold[3] = millis();
+    if (millis() - timeold[2] >= 200){
 
-  }
+      Slight = mySensor.readSenLight(5);
+      for(int i=0;i<2; i++)
+        ReadTemp[i]=mySensor.readSenTemp(i);
+      
+      if (ReadTemp[0]<=15 or ReadTemp[1]<=20)
+        digitalWrite(0,HIGH);
+      else
+        digitalWrite(0,LOW);
+      
+      timeold[2] = millis();
 
-  if (millis() - timeold[4] >= 50){
-    if (HC12.available() > 0)  //Read HC12 -> Variable
-      x = HC12.read();
+    }
   
-    //Serial.println(x);       //Print of date reciave         
+    if (millis() - timeold[3] >= 500){
+      data_array = "";
+      data_array += String(millis()); 
+      data_array += ",";
+      data_array += String(ReadTemp[0]);
+      data_array += ",";
+      data_array += String(ReadTemp[1]);
+      data_array += ",";
+      data_array += String(Slight);
+      data_array += ",";
+      data_array += String(ReadDistance[0]);
+      data_array += ",";
+      data_array += String(ReadDistance[1]);
+      data_array += ",";
+      data_array += String(ReadDistance[2]);
+      data_array += ",";
+      data_array += String(ReadSpeed[0]);
+      data_array += ",";
+      data_array += String(ReadSpeed[1]);
 
-    //Choice of action 
-    if(date == 'G')
-      Engine.Forward(255, 255); //Robot go to front
+      //Serial.println(data_array);
+      dataFile = SD.open("DATA"+fileName+".csv",FILE_WRITE);
     
-    else if(date == 'I')
-      Engine.Backward(255, 255); //Robot go to back
-    
-    else if(date == 'Z')
-      Engine.Right(255, 255);    //Robot go to Right
-    
-    else if(date == 'L')
-      Engine.Left(255, 255);     //Robot go to Left
+      if(dataFile){
+        dataFile.println(data_array);
+        dataFile.close();
+      }
 
-    else if(date == 'R')
+      timeold[3] = millis();
+
+    }
+
+    if (millis() - timeold[4] >= 50){
+        String data1 = "Data1";
+        if(set){
+          HC12.println("Robot->"+ data_array);  // Reset serial end of line flag
+          set=!set;
+        }
+        else{
+          while (HC12.available()) {                  // If Arduino's computer rx buffer has data
+            SerialByteIn = HC12.read();               // Store each character in byteIn
+            SerialReadBuffer += char(SerialByteIn);     // Write each character of byteIn to SerialReadBuffer
+            if (SerialByteIn == '\n')                 // Check to see if at the end of the line
+                SerialEnd = true;                         // Set SerialEnd flag to indicate end of line
+          }
+
+          if (SerialEnd) {                              // Check to see if SerialEnd flag is true
+            if (SerialReadBuffer.startsWith("Control->") and SerialReadBuffer.endsWith("\n")) {    // Has a command been sent from local computer
+              Serial.print("Receido Control: "); 
+              Engine.Forward(255, 255);
+              SerialReadBuffer.remove(0,9);
+              Serial.print(SerialReadBuffer);  
+              set=!set;
+            } 
+            SerialReadBuffer = "";                      // Clear SerialReadBuffer
+            SerialEnd = false;  
+          }
+          
+        }
+    }
+
+    if (millis() - timeold[1] >= 100){
+        for(int i= 0; i<3; i++){
+          ReadDistance[i] = mySensor.readUltraS(i);
+          delay(20);
+        }
+
+    }
+    
+    if((ReadDistance[2] >= 15) ){
+    Engine.Forward(255, 255); //Robot go to back
+      delay(50);
+    }
+
+    else{
       Engine.Stop();       //Robot Stop
-    else 
-      Engine.Stop();       //Robot Stop
-
-    timeold[4] = millis();
-
-  }
-  
-
-
-
+      delay(50);
+    } 
+    
 }
 
 String sd_saver(File dir){
