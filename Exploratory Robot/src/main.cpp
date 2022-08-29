@@ -8,6 +8,7 @@
 
 ////////////////////////////////////////////-Variables-///////////////////////////////////////////////////////
 char date; 
+char Data[];
 int x;                     //Comunicate variable
 unsigned long int timeold[5];   //Measure last time
 int pulseSpeed[2] = {0,0};      //Measure of quantity of speed pulse
@@ -142,9 +143,9 @@ void loop() {
           if (SerialEnd) {                              // Check to see if SerialEnd flag is true
             if (SerialReadBuffer.startsWith("Control->") and SerialReadBuffer.endsWith("\n")) {    // Has a command been sent from local computer
               Serial.print("Receido Control: "); 
-              Engine.Forward(255, 255);
               SerialReadBuffer.remove(0,9);
-              Serial.print(SerialReadBuffer);  
+              Serial.print(SerialReadBuffer);
+              strcpy(Data, SerialReadBuffer.c_str());   
               set=!set;
             } 
             SerialReadBuffer = "";                      // Clear SerialReadBuffer
@@ -162,14 +163,16 @@ void loop() {
 
     }
     
-    if((ReadDistance[2] >= 15) ){
-    Engine.Forward(255, 255); //Robot go to back
-      delay(50);
-    }
 
     else{
-      Engine.Stop();       //Robot Stop
-      delay(50);
+
+      char  *Datas =  strtok(Data, ",");
+      Serial.print(Datas);
+
+      int pwm[] = {int(Datas[24]),int(Datas[25])};
+
+      Engine.Forward(pwm[0], pwm[1]);
+
     } 
     
 }
