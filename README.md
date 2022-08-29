@@ -55,7 +55,7 @@ To use Actuador's libraries you should add in your code this commands:
 ```
 #include "Actuators.hpp"
 Sensor "Objet_name"(pin_Left_1, pin_Left_2, pin_Right_1, pin_Right_2);
-"Object_name".begin(); //Start your sensor
+"Object_name".begin(); //Start your engine
 "Object_name"."comand"(pwm_Left, pwm_Right); //Use your Engines
 
 
